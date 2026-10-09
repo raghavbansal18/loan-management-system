@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Header } from "@/components/Header";
 import { Alert, Card, StatusBadge, buttonClass } from "@/components/ui";
@@ -42,24 +42,18 @@ function ApplyFlow() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
 
-  const load = useCallback(async () => {
-    try {
-      const [p, l] = await Promise.all([
-        api.get<{ profile: BorrowerProfile | null }>("/borrower/profile"),
-        api.get<{ loans: Loan[] }>("/borrower/loans"),
-      ]);
-      setProfile(p.profile);
-      setLoans(l.loans);
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setReady(true);
-    }
-  }, []);
-
   useEffect(() => {
-    load();
-  }, [load]);
+    Promise.all([
+      api.get<{ profile: BorrowerProfile | null }>("/borrower/profile"),
+      api.get<{ loans: Loan[] }>("/borrower/loans"),
+    ])
+      .then(([p, l]) => {
+        setProfile(p.profile);
+        setLoans(l.loans);
+      })
+      .catch((err) => setError(errorMessage(err)))
+      .finally(() => setReady(true));
+  }, []);
 
   if (!ready) return <p className="text-sm text-slate-500">Loading…</p>;
   if (error) return <Alert>{error}</Alert>;

@@ -19,13 +19,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tokenStore.get()) {
-      setLoading(false);
-      return;
-    }
-    api
-      .get<{ user: User }>("/auth/me")
-      .then((res) => setUser(res.user))
+    const restore = tokenStore.get() ? api.get<{ user: User }>("/auth/me") : Promise.resolve(null);
+    restore
+      .then((res) => {
+        if (res) setUser(res.user);
+      })
       .catch(() => tokenStore.clear())
       .finally(() => setLoading(false));
   }, []);
