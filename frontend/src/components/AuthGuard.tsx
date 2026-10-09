@@ -12,7 +12,7 @@ export function AuthGuard({ roles, children }: { roles: Role[]; children: React.
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const allowed = !!user && (user.role === "ADMIN" ? roles.includes("ADMIN") : roles.includes(user.role));
+  const allowed = !!user && roles.includes(user.role);
 
   useEffect(() => {
     if (loading) return;
